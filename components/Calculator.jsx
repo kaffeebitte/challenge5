@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 const BUTTONS = [
-  ["1", "2", "3", "/"],
+  ["1", "2", "3", "+"],
   ["4", "5", "6", "-"],
   ["7", "8", "9", "X"],
   [".", "0", "%", "÷"],
@@ -40,11 +40,14 @@ export default function Calculator() {
 
   const handlePercent = () => {
     setDisplay((prev) => {
-      const m = prev.match(/(\d+\.?\d*)$/);
-      if (!m) return prev;
-      const num = parseFloat(m[0]);
-      const replaced = (num / 100).toString();
-      return prev.slice(0, m.index) + replaced;
+      // Nếu đang trống thì không thêm
+      if (prev === "") return prev;
+
+      // Nếu ký tự cuối là toán tử thì thay thế bằng %
+      if (isOperatorChar(prev.slice(-1))) return prev.slice(0, -1) + "%";
+
+      // Ngược lại thì thêm %
+      return prev + "%";
     });
   };
 
