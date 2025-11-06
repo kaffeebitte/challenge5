@@ -40,14 +40,20 @@ export default function Calculator() {
 
   const handlePercent = () => {
     setDisplay((prev) => {
-      // Nếu đang trống thì không thêm
       if (prev === "") return prev;
 
-      // Nếu ký tự cuối là toán tử thì thay thế bằng %
+      // Nếu ký tự cuối là toán tử → thay thế bằng %
       if (isOperatorChar(prev.slice(-1))) return prev.slice(0, -1) + "%";
 
-      // Ngược lại thì thêm %
-      return prev + "%";
+      // Nếu biểu thức kết thúc bằng số (ví dụ "10") → thêm % để tính phần trăm
+      const match = prev.match(/(\d+\.?\d*)$/);
+      if (match && match.index + match[0].length === prev.length) {
+        // kiểm tra nếu sau % có số khác nữa trong biểu thức thì coi là chia dư
+        // nhưng vì đang nhấn % khi chưa có số sau → ta coi như phần trăm
+        return prev + "%";
+      }
+
+      return prev;
     });
   };
 
@@ -57,7 +63,16 @@ export default function Calculator() {
   const handleAnswer = () => {
     if (!display) return;
     let expr = display.replace(/X/g, "*").replace(/÷/g, "/");
+
+    // Nếu kết thúc bằng %, chuyển sang phần trăm (chia cho 100)
+    if (expr.endsWith("%")) {
+      const num = parseFloat(expr.slice(0, -1));
+      expr = String(num / 100);
+    }
+
+    // Nếu ký tự cuối là toán tử (trừ %) thì bỏ
     if (isOperatorChar(expr.slice(-1))) expr = expr.slice(0, -1);
+
     try {
       const result = Function("return " + expr)();
       const displayResult =
